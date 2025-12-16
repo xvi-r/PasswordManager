@@ -1,4 +1,4 @@
-from cryptography.fernet import Fernet
+from cryptography.fernet import Fernet, InvalidToken
 from password_generator import generate_password
 from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 from cryptography.hazmat.primitives.hashes import SHA256
@@ -7,7 +7,6 @@ import base64
 import json
 import os
 
-key_path = r"C:\passwordmanagerkey\key.key"
 salt_path = r"salt.bin"
 
 if not os.path.exists(salt_path):
@@ -20,8 +19,6 @@ else:
         salt = file.read()
     print(f"Salt was already created reading salt fromm {salt_path}")
     
-    
-
 
 kdf = PBKDF2HMAC(
     algorithm=SHA256(),
@@ -30,38 +27,37 @@ kdf = PBKDF2HMAC(
     iterations=200_000,
 )
 
+plaintext = input("Enter Master Password: ").encode("utf-8")
+key = kdf.derive(plaintext)
 
-
-
-
-
-
-
-
-with open(key_path, 'rb') as file:
-    key = file.read()
+key = base64.urlsafe_b64encode(key)
 
 
 f = Fernet(key)
 
+def decrypt_vault(key) -> dict:
+    with open("vault.bin", 'rb') as file:
+        encrypted_vault = base64.urlsafe_b64encode(file.read())
+        encrypted_vault = f.decrypt(encrypted_vault).decode("utf-8")
+    encrypted_vault = json.loads(encrypted_vault)
+    return encrypted_vault
+
+def encrypt_vault(key , encrypted_json: bytes) -> None:
+    with open("vault.bin", 'wb') as file:
+        print("WRITING TO VAULT")
+        file.write(base64.urlsafe_b64decode(encrypted_json))
+        print("SUCCESS SAVED TO VAULT")
 
 def store_password(site, email, password, key):
-    global data
-    password = f.encrypt(password).decode("utf-8")
-    
-    with open("test.json", 'r') as file:
-        data = json.load(file)
+
+    decrypted_json: dict = decrypt_vault(key)
         
-    print(type(data["google.com"]))
+    decrypted_json.setdefault(site, {}).update({email : password})
     
-    data.setdefault(site, {}).update({email : password})
-    
-    print(data)
-    
-    json_data = json.dumps(data, indent=4)
-    
-    with open("test.json", 'w') as file:
-        file.write(json_data)
+    encrypted_json = json.dumps(decrypted_json).encode("utf-8")
+    encrypted_json = f.encrypt(encrypted_json)
+
+    encrypt_vault(key,encrypted_json)
 
 def get_password(site, email, key):
     
@@ -69,11 +65,14 @@ def get_password(site, email, key):
         data = json.load(file)
     
     encrypted_password = data[site].get(email)
-    password = f.decrypt(encrypted_password).decode("utf-8")
+    try:
+        password = f.decrypt(encrypted_password).decode("utf-8")
+        print(f"Site : {site}, Email : {email}, Password : {password}")
+    except InvalidToken:
+        print(f"Decryption failed: Invalid Token")
     
-    print(f"Site : {site}, Email : {email}, Password : {password}")
-    
-
+print(type(decrypt_vault(key)))
+print(decrypt_vault(key))
         
 
 
@@ -81,10 +80,10 @@ def get_password(site, email, key):
 
 
 
-#store_password("yo2ube.com", "MAA26236SSIVE@outlook.com", b"FarCAAAZBB!?", key)
+#store_password("youtube.com", "rfracx2i@gmail.com", "AWEOMEPASS!?", key)
 #get_password("google.com", "refractxvi@outlook.com",key)
 
 #key = base64.urlsafe_b64encode(kdf.derive("The-Purple-Dinosaur-Eats-Computer".encode("utf-8")))
 
-
+#get_password("google.com", "Luis@gmail.com", key)
 #print(key)

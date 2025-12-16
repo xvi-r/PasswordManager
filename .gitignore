@@ -1,0 +1,10 @@
+# Secrets / crypto
+key.key
+salt.bin
+
+# Encrypted data
+test.json
+
+# Python
+__pycache__/
+*.pyc

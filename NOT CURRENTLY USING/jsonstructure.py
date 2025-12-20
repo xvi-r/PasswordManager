@@ -1,6 +1,6 @@
 import json
 
-data = {"site": {"email": "password"}}
+data = {"accounts": {"email": "password"}}
 
 data = json.dumps(data, indent=4)
 

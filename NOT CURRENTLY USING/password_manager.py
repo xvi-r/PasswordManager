@@ -61,18 +61,15 @@ def store_password(site, email, password, key):
 
 def get_password(site, email, key):
     
-    with open("test.json", 'r') as file:
-        data = json.load(file)
-    
-    encrypted_password = data[site].get(email)
+    decrypted_json: dict = decrypt_vault(key)
     try:
-        password = f.decrypt(encrypted_password).decode("utf-8")
-        print(f"Site : {site}, Email : {email}, Password : {password}")
-    except InvalidToken:
-        print(f"Decryption failed: Invalid Token")
+        password = decrypted_json[site].get(email)
+    except KeyError:
+        print(f"Site not found in vault")
+        return
+    print(f"Site : {site}, Email : {email}, Password : {password}")
     
-print(type(decrypt_vault(key)))
-print(decrypt_vault(key))
+
         
 
 
@@ -81,7 +78,7 @@ print(decrypt_vault(key))
 
 
 #store_password("youtube.com", "rfracx2i@gmail.com", "AWEOMEPASS!?", key)
-#get_password("google.com", "refractxvi@outlook.com",key)
+get_password("yo2tube.com", "rfracx2i@gmail.com" , key)
 
 #key = base64.urlsafe_b64encode(kdf.derive("The-Purple-Dinosaur-Eats-Computer".encode("utf-8")))
 

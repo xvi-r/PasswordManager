@@ -1,1 +1,0 @@
-print("hello".("utf-8"))

@@ -1,0 +1,44 @@
+# Secrets / crypto
+salt.bin
+.env
+.env.*
+*.secret
+*.key
+
+# Encrypted data
+test.json
+refresh_token.txt
+device_uid.txt
+vault.bin
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+.venv/
+venv/
+
+# Flask / runtime
+instance/
+*.log
+
+# Test / scratch code
+tests/
+scratch/
+tmp/
+debug/
+*.test.py
+*_test.py
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

@@ -1,5 +1,4 @@
 # Secrets / crypto
-vault.bin
 salt.bin
 
 
@@ -11,3 +10,4 @@ __pycache__/
 *.pyc
 refresh_token.txt
 device_uid.txt
+vault.bin

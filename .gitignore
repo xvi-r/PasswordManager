@@ -1,6 +1,7 @@
 # Secrets / crypto
-key.key
+vault.bin
 salt.bin
+
 
 # Encrypted data
 test.json
@@ -8,3 +9,5 @@ test.json
 # Python
 __pycache__/
 *.pyc
+refresh_token.txt
+device_uid.txt

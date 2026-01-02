@@ -32,7 +32,7 @@ class VaultManager:
             algorithm=SHA256(),
             length=32,
             salt=self.salt,
-            iterations=200_000,
+            iterations=600_000, #OWASP
         )
         raw_key = kdf.derive(password.encode("utf-8"))
         return base64.urlsafe_b64encode(raw_key)
@@ -50,28 +50,27 @@ class VaultManager:
                 encrypted_data = file.read()
               
             decrypted_json = self.f.decrypt(encrypted_data).decode("utf-8")
-            print("Vault loaded")
+            print("Vault Loaded")
             return json.loads(decrypted_json)
         except InvalidToken:
-                print("INVALID TOKEN")
-                
-            
-            
+                raise ValueError("Incorrect master password")
 
-    def save_vault(self, data_dict):
-        encrypted_token = self.f.encrypt(json.dumps(data_dict).encode("utf-8"))
+    def save_vault(self):
+        encrypted_token = self.f.encrypt(json.dumps(self.unencrypted_vault).encode("utf-8"))
 
-        raw_binary = base64.urlsafe_b64decode(encrypted_token)
+        raw_binary = encrypted_token
         with open(self.vault_path, 'wb') as file:
             file.write(raw_binary)
             
     def add_password(self, site: str, email: str, password: str) -> None:
-        data: dict = self.load_vault()
+        data: dict = self.unencrypted_vault
         data.setdefault(site, {}).update({email: password})
-        self.save_vault(data)
-
+        
+        self.unencrypted_vault = data
+        self.save_vault() #Just to make sure that the password isn't lost if the program crashes // Will be sending encrypted vault to server instead
+        
     def get_password(self, site: str, email: str):
-        data = self.load_vault()
+        data = self.unencrypted_vault
         try:
             return data[site].get(email, "Email not found")
         except KeyError:

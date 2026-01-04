@@ -2,7 +2,7 @@ import sqlite3
 import secrets
 import time
 import jwt
-from auth import generate_access_token, require_access_token
+from auth import generate_access_token, require_access_token, hmac_token_hash
 from db import get_db, init_db
 from flask import Flask, g, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -95,7 +95,8 @@ def login():
         
         if check_password_hash(user[1], password):
             refresh_token = secrets.token_urlsafe(64)
-            refresh_token_hash = generate_password_hash(refresh_token)
+            print(refresh_token)
+            refresh_token_hash = hmac_token_hash(refresh_token)
             
             
             cur.execute(
@@ -140,7 +141,25 @@ def get_vault():
     return jsonify({"vault": vault_str}), 200
         
         
-
+@app.route("/refresh_access_token", methods = ["POST"])
+def refresh_access_token():
+    
+    if request.method == "POST":
+        
+        refresh_token = request.headers.get("X-Refresh-Token")
+        device_uid = request.headers.get("X-Device-UID")
+            
+        connection = get_db()
+        cursor = connection.cursor()
+        
+        cursor.execute("""SELECT * FROM refresh_tokens WHERE token_hash = ? AND device_uid = ?""",
+                    (hmac_token_hash(refresh_token), device_uid,))
+        
+        result = cursor.fetchone()
+        
+        print(result)
+        
+        return "t"
     
     
     

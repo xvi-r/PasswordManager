@@ -1,6 +1,9 @@
 import jwt
 import os
 import time
+import hmac
+import hashlib
+from db import get_db
 from flask import Flask, g, request, jsonify
 
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -25,6 +28,7 @@ def require_access_token(f):
         
         try:
             token = auth_header.split(" ")[1]
+            print(f"[DEBUG] : YOUR TOKEN: {token}")
         except IndexError:
             return jsonify({"error": "invalid Authorization header"}), 401
         try:
@@ -39,7 +43,22 @@ def require_access_token(f):
 
         return f(*args, **kwargs)
     return wrapper
-        
-        
-        
-        
+
+
+def hmac_token_hash(token: str):
+    print(token)
+    key = os.getenv("REFRESH_TOKEN_SECRET")
+    if not key:
+        raise RuntimeError("REFRESH_TOKEN_SECRET not set")
+    print(token)
+    key_bytes = key.encode()
+    print(type(token))
+    token_bytes = token.encode()
+    
+    return hmac.new(
+        key_bytes,
+        token_bytes,
+        hashlib.sha256
+    ).hexdigest()
+    
+    

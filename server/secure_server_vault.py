@@ -157,9 +157,15 @@ def refresh_access_token():
         
         result = cursor.fetchone()
         
-        print(result)
         
-        return "t"
+        if result is not None:
+            sub = str(result[1])
+            print(type)
+            return jsonify({"access_token": generate_access_token(sub)}),200
+        else:
+            return jsonify({"message":"no such refresh token for this device"}), 401
+        
+ 
     
     
     

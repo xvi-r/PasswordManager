@@ -4,6 +4,8 @@ import os
 import requests
 from vault_manager import VaultManager
 
+access_token = None
+
 def get_refresh_token():
     with open("client/refresh_token.txt", 'r') as file:
         return file.read()
@@ -20,7 +22,7 @@ if not os.path.exists("client/device_uid.txt"):
 with open("client/device_uid.txt", "r") as file:
     device_uid = file.read()
 
-access_token = None
+
 
 def signup(): #TODO replace with input later
     payload = {
@@ -65,45 +67,27 @@ def get_vault():
     print(response.json())
     
 def refresh_access_token():
+    global access_token 
     headers = {
         "X-Refresh-Token": get_refresh_token(),
         "X-Device-UID": get_device_uid()
     }
     
+    
     response = requests.post(headers=headers, url="https://vault.ev4xl.space/refresh_access_token")
+    if response is not None:
+        access_token = response.json().get("access_token")
+    return(response.json())
     
     
 #signup()
 #login()
-
-refresh_access_token()
-
-
+#refresh_access_token()
+#get_vault()
 
 
 
 
-
-
-
-
-
-
-
-
-
-"""
-try:
-    vault_manager = VaultManager("test123")
-except ValueError as e:
-    print(e)
-    sys.exit(1)
-    
-
-
-print("Password: ",vault_manager.get_password("google.com","test@gmail.com"))
-#vault_manager.save_vault()
-"""
 
 
 

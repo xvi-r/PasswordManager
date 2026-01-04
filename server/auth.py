@@ -32,11 +32,13 @@ def require_access_token(f):
         except IndexError:
             return jsonify({"error": "invalid Authorization header"}), 401
         try:
-            payload = jwt.decode(token, JWT_SECRET, algorithms=['HS256'])
-        except jwt.InvalidTokenError:
-            return jsonify({"error": "invalid token"}), 401
+            payload = jwt.decode(token, JWT_SECRET, algorithms=JWT_ALGORITHM)
+            
         except jwt.ExpiredSignatureError:
             return jsonify({"error": "expired token"}), 401
+        except jwt.InvalidTokenError as e:
+            print("[ERROR]: ", e)
+            return jsonify({"error": "invalid token"}), 401
         
         g.user_id = payload.get("sub")
         

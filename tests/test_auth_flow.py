@@ -76,8 +76,4 @@ def test_auth_flow():
     assert "vault" in response.json and response.json.get("vault") != ""
     
     
-    #Clean up after test
-    if os.path.exists("test_users.db"):
-        os.remove("test_users.db")
-    
     

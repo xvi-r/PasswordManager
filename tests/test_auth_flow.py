@@ -1,3 +1,4 @@
+import os
 
 from server.secure_server_vault import app
 from server.db import init_db
@@ -13,11 +14,11 @@ def test_auth_flow():
         "encoded_vault": "encrypted_vault_placeholder"
         }
     
-    #signup
+    #/signup
     response = client.post("/signup", json=payload)
     assert response.status_code == 201
     
-    #login
+    #/login
     payload = {
     "username": "test_user",
     "password": "test_password",
@@ -28,9 +29,13 @@ def test_auth_flow():
     print(access_token)
     assert response.status_code == 200
     
-    #get_vault
+    #/get_vault
     headers = {"Authorization": f"Bearer {access_token}"}
     response = client.get("/get_vault", headers=headers)
     assert response.status_code == 200
+    
+    #Clean up after test
+    if os.path.exists("test_users.db"):
+        os.remove("test_users.db")
     
     

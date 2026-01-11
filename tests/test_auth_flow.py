@@ -1,11 +1,19 @@
 import os
 import sqlite3
+import pytest
 from server.secure_server_vault import app
 from server.db import init_db
 
 
-init_db()
 client = app.test_client()
+
+@pytest.fixture(autouse=True)
+def clean_test_db():
+    db_path = "test_users.db"
+    if os.path.exists(db_path):
+        os.remove(db_path)
+    
+    init_db()
 
 def test_signup_creates_valid_user():
     payload = {
@@ -33,9 +41,6 @@ def test_signup_creates_valid_user():
     assert encoded_vault == payload["encoded_vault"].encode()
 
     
-
-    
-
    
 def test_auth_flow():
 

@@ -20,7 +20,7 @@ def init_db():
             username TEXT UNIQUE NOT NULL,
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
-            vault BLOB
+            vault BLOB NOT NULL
         )
     """)
     

@@ -19,8 +19,6 @@ if not os.path.exists("client/device_uid.txt"):
     with open("client/device_uid.txt", "w") as file:
         file.write(str((uuid.uuid4())))
 
-with open("client/device_uid.txt", "r") as file:
-    device_uid = file.read()
 
 
 
@@ -40,7 +38,7 @@ def login(): #TODO replace with input later
     payload = {
         "username": "test_user",
         "password": "test_password",
-        "device_uid": device_uid
+        "device_uid": get_device_uid()
         }
 
     response = requests.post(url="https://vault.ev4xl.space/login", json=payload)
@@ -81,7 +79,7 @@ def refresh_access_token():
     
     
 #signup()
-#login()
+login()
 #refresh_access_token()
 #get_vault()
 

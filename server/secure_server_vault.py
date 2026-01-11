@@ -2,8 +2,8 @@ import sqlite3
 import secrets
 import time
 import jwt
-from auth import generate_access_token, require_access_token, hmac_token_hash
-from db import get_db, init_db
+from .auth import generate_access_token, require_access_token, hmac_token_hash
+from .db import get_db, init_db
 from flask import Flask, g, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
 

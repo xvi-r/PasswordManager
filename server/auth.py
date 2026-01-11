@@ -3,7 +3,7 @@ import os
 import time
 import hmac
 import hashlib
-from db import get_db
+from .db import get_db
 from flask import Flask, g, request, jsonify
 
 JWT_SECRET = os.getenv("JWT_SECRET")
@@ -34,7 +34,8 @@ def require_access_token(f):
         try:
             payload = jwt.decode(token, JWT_SECRET, algorithms=JWT_ALGORITHM)
             
-        except jwt.ExpiredSignatureError:
+        except jwt.ExpiredSignatureError as e:
+            print("[ERROR]: ", e)
             return jsonify({"error": "expired token"}), 401
         except jwt.InvalidTokenError as e:
             print("[ERROR]: ", e)

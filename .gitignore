@@ -18,6 +18,7 @@ vault.bin
 
 # Python
 __pycache__/
+.pytest_cache
 *.py[cod]
 *.pyo
 *.pyd
@@ -30,7 +31,7 @@ instance/
 *.log
 
 # Test / scratch code
-tests/
+
 scratch/
 tmp/
 debug/

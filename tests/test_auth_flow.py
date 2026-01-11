@@ -24,6 +24,13 @@ def test_auth_flow():
     "device_uid": "test_device_uid"
     }
     response = client.post("/login", json=payload)
+    access_token = response.json.get("access_token")
+    print(access_token)
+    assert response.status_code == 200
+    
+    #get_vault
+    headers = {"Authorization": f"Bearer {access_token}"}
+    response = client.get("/get_vault", headers=headers)
     assert response.status_code == 200
     
     

@@ -12,7 +12,7 @@ ACCESS_TOKEN_TTL = 15 * 60 #15 minutes
 
 def generate_access_token(user_id):
     payload = {
-        "sub": user_id,
+        "sub": str(user_id),
         "iat": int(time.time()),
         "exp": int(time.time()) + ACCESS_TOKEN_TTL
     }

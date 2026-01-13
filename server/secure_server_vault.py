@@ -152,18 +152,25 @@ def refresh_access_token():
         connection = get_db()
         cursor = connection.cursor()
         
-        #Here result[0] = id, and result[1] = user_id
-        cursor.execute("""SELECT id, user_id FROM refresh_tokens WHERE token_hash = ? AND device_uid = ?""",
+        #Here result[0] = id, and result[1] = user_id and result[2] our revoked status
+        cursor.execute("""SELECT id, user_id, revoked FROM refresh_tokens WHERE token_hash = ? AND device_uid = ?""",
                     (hmac_token_hash(refresh_token), device_uid,))
         
         result = cursor.fetchone()
         
         
         if result is not None:
+            #Check if the token is revoked!
+            if result[2] == 1:
+                return jsonify({"messages": "Using revoked access token"})
+            
+            #Here we revoke the token
             cursor.execute("""UPDATE refresh_tokens SET revoked = 1 WHERE id = ?""",
                            (result[0],))
+            connection.commit()
+            
             sub = str(result[1])
-            print(type)
+            
             return jsonify({"access_token": generate_access_token(sub)}),200
         else:
             return jsonify({"message":"no such refresh token for this device"}), 401

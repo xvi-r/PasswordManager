@@ -55,6 +55,7 @@ def login(): #TODO replace with input later
     
     #Store access_token in memory
     access_token = data.get("access_token")
+    print(data)
     
 def get_vault():
     headers = {
@@ -79,8 +80,8 @@ def refresh_access_token():
     
     
 #signup()
-login()
-#refresh_access_token()
+#login()
+#print(refresh_access_token())
 #get_vault()
 
 

@@ -2,7 +2,7 @@ import sqlite3
 import secrets
 import time
 import jwt
-from .auth import generate_access_token, require_access_token, hmac_token_hash
+from .auth import generate_access_token, require_access_token, hmac_token_hash, store_refresh_token
 from .db import get_db, init_db
 from flask import Flask, g, request, jsonify
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -95,17 +95,9 @@ def login():
         
         if check_password_hash(user[1], password):
             refresh_token = secrets.token_urlsafe(64)
-            print(refresh_token)
-            refresh_token_hash = hmac_token_hash(refresh_token)
             
+            store_refresh_token(cur, user[0], refresh_token, device_uid)
             
-            cur.execute(
-                """
-                INSERT INTO refresh_tokens (user_id, token_hash, expires_at, created_at, device_uid)
-                VALUES (?, ?, ?, ?, ?)
-                """,
-                (user[0], refresh_token_hash, int(time.time()) + 60 * 60 * 24 * 30, int(time.time()), device_uid)
-            )
             db.commit()
             return jsonify({"message": "Successful token creation",
                             "refresh_token": refresh_token,
@@ -152,21 +144,27 @@ def refresh_access_token():
         connection = get_db()
         cursor = connection.cursor()
         
+        print("HASH",hmac_token_hash(refresh_token))
         #Here result[0] = id, and result[1] = user_id and result[2] our revoked status
         cursor.execute("""SELECT id, user_id, revoked FROM refresh_tokens WHERE token_hash = ? AND device_uid = ?""",
                     (hmac_token_hash(refresh_token), device_uid,))
         
         result = cursor.fetchone()
-        
+        print("x",result)
         
         if result is not None:
             #Check if the token is revoked!
             if result[2] == 1:
-                return jsonify({"messages": "Using revoked access token"})
+                return jsonify({"messages": "Using revoked access token"}), 401
             
             #Here we revoke the token
             cursor.execute("""UPDATE refresh_tokens SET revoked = 1 WHERE id = ?""",
                            (result[0],))
+            connection.commit()
+            
+            #And create a new one for the same user, this is token rotation
+            new_refresh_token = secrets.token_urlsafe(64)
+            store_refresh_token(cursor, result[1], new_refresh_token, device_uid)
             connection.commit()
             
             sub = str(result[1])

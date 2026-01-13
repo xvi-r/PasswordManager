@@ -79,9 +79,9 @@ def refresh_access_token():
     return(response.json())
     
     
-#signup()
-#login()
-#print(refresh_access_token())
+signup()
+login()
+print(refresh_access_token())
 #get_vault()
 
 

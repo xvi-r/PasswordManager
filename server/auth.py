@@ -49,11 +49,10 @@ def require_access_token(f):
 
 
 def hmac_token_hash(token: str):
-    print(token)
     key = os.getenv("REFRESH_TOKEN_SECRET")
     if not key:
         raise RuntimeError("REFRESH_TOKEN_SECRET not set")
-    print(token)
+
     key_bytes = key.encode()
     print(type(token))
     token_bytes = token.encode()
@@ -63,5 +62,10 @@ def hmac_token_hash(token: str):
         token_bytes,
         hashlib.sha256
     ).hexdigest()
-    
-    
+
+def store_refresh_token(db_cursor, user_id, token, device_uid, expires_in=60*60*24*30):
+    token_hash = hmac_token_hash(token)
+    db_cursor.execute("""
+        INSERT INTO refresh_tokens (user_id, token_hash, expires_at, created_at, device_uid)
+        VALUES (?, ?, ?, ?, ?)
+    """, (user_id, token_hash, int(time.time()) + expires_in, int(time.time()), device_uid))

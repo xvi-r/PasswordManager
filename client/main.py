@@ -74,8 +74,10 @@ def refresh_access_token():
     
     
     response = requests.post(headers=headers, url="https://vault.ev4xl.space/refresh_access_token")
-    if response is not None:
+    if response.status_code == 200:
         access_token = response.json().get("access_token")
+        with open("client/refresh_token.txt", "w") as file:
+            file.write(response.json().get("refresh_token"))
     return(response.json())
     
     

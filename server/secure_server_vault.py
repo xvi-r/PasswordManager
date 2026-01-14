@@ -146,21 +146,27 @@ def refresh_access_token():
         
         print("HASH",hmac_token_hash(refresh_token))
         #Here result[0] = id, and result[1] = user_id and result[2] our revoked status
+        #Should start using tuple unpacking
         cursor.execute("""SELECT id, user_id, revoked FROM refresh_tokens WHERE token_hash = ? AND device_uid = ?""",
                     (hmac_token_hash(refresh_token), device_uid,))
         
         result = cursor.fetchone()
-        print("x",result)
         
         if result is not None:
             #Check if the token is revoked!
             if result[2] == 1:
+                #If token is reused we revoke all of the user's tokens under that device uid
+                cursor.execute("""UPDATE refresh_tokens SET revoked = 1 WHERE user_id = ? AND device_uid = ?""",
+                           (result[1], device_uid))
+                connection.commit()
                 return jsonify({"messages": "Using revoked access token"}), 401
             
-            #Here we revoke the token
-            cursor.execute("""UPDATE refresh_tokens SET revoked = 1 WHERE id = ?""",
-                           (result[0],))
+            
+            #Here we revoke only the one token that was just used
+            cursor.execute("""UPDATE refresh_tokens SET revoked = 1 WHERE id = ? AND device_uid = ?""",
+                           (result[0], device_uid))
             connection.commit()
+            
             
             #And create a new one for the same user, this is token rotation
             new_refresh_token = secrets.token_urlsafe(64)
@@ -169,7 +175,8 @@ def refresh_access_token():
             
             sub = str(result[1])
             
-            return jsonify({"access_token": generate_access_token(sub)}),200
+            return jsonify({"access_token": generate_access_token(sub),
+                            "refresh_token": new_refresh_token }),200
         else:
             return jsonify({"message":"no such refresh token for this device"}), 401
         
